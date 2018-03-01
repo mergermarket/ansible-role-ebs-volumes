@@ -1,0 +1,22 @@
+- name: dependencies
+  pip:
+    name: "{{item}}"
+  with_items:
+    - boto3
+    - docopt
+
+- name: nfs-utils
+  yum:
+    name: nfs-utils
+
+- name: cluster instance setup
+  copy:
+    src: cluster_instance_setup.py
+    dest: /usr/local/bin/
+    mode: 0755
+
+- name: cluster instance setup
+  copy:
+    src: attach_random_volume.py
+    dest: /usr/local/bin/
+    mode: 0755
