@@ -1,6 +1,8 @@
 EBS Volumes
 =========
 
+[![Build Status](https://travis-ci.org/mergermarket/ansible-role-ebs-volumes.svg?branch=master)](https://travis-ci.org/mergermarket/ansible-role-ebs-volumes)
+
 Manage EBS volumes
 
 Requirements
