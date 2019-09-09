@@ -2,6 +2,7 @@
 import random
 import time
 from urllib2 import urlopen
+from random import shuffle
 
 import boto3
 
@@ -27,7 +28,7 @@ def get_available_volumes(tag):
 def main():
     volumes = get_available_volumes({'Usage':'jenkins-volume'})
     volumes_json = []
-    for volume in volumes:
+    for volume in shuffle(volumes):
         volumes_json.append (
             {
                 "description": "random jenkins volume",
