@@ -27,8 +27,9 @@ def get_available_volumes(tag):
 
 def main():
     volumes = get_available_volumes({'Usage':'jenkins-volume'})
+    shuffle(volumes)
     volumes_json = []
-    for volume in shuffle(volumes):
+    for volume in volumes:
         volumes_json.append (
             {
                 "description": "random jenkins volume",
