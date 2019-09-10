@@ -139,7 +139,8 @@ def attach_volume(boto_ec2_client, instance_id, volume_id, device):
             except Exception as err:
                 LOGGER.error("Error attaching volume (%s) - %s", volume_id, err)
                 return False
-
+                
+        wait_for_device_to_exist(device)
         if device_exist(device):
             return True
 
@@ -296,17 +297,18 @@ def attach_ebs_volumes(volumes):
                     check_filesystem(local_device, create_fs)
                     check_filesystem_mount(volume_id, local_device, mount_point)
                     check_fstab(local_device, mount_point)
+                    LOGGER.info(
+                        "Volume {} successfully attached at {} mounted at {}.".format(
+                            volume_id, local_device, mount_point
+                        )
+                    )
+                    return True
         except Exception as err:
             panic(
                 "error mounting ebs volume",
                 "volume id: %s, error: %s" % (volume_id, str(err)),
             )
-
-        LOGGER.info(
-            "Volume {} successfully attached at mounted at {}.".format(
-                volume_id, mount_point
-            )
-        )
+    return False
 
 
 def configure_efs(filesystem_id):

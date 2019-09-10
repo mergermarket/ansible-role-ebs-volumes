@@ -12,6 +12,7 @@ from cluster_instance_setup import attach_ebs_volumes
 def get_availability_zone():
     return urlopen('http://169.254.169.254/latest/meta-data/placement/availability-zone').read()
 
+ 
 def get_region():
     availability_zone = get_availability_zone()
     return availability_zone[:-1]
@@ -28,18 +29,16 @@ def get_available_volumes(tag):
 def main():
     volumes = get_available_volumes({'Usage':'jenkins-volume'})
     shuffle(volumes)
-    volumes_json = []
     for volume in volumes:
-        volumes_json.append (
-            {
-                "description": "random jenkins volume",
-                "volume-id": volume,
-                "device": "/dev/sde",
-                "create-fs": True,
-                "mount-point": "/var/lib/docker"
-            }
-        )   
-    attach_ebs_volumes(volumes_json)
+        volume_json = {
+            "description": "random jenkins volume",
+            "volume-id": volume,
+            "device": "/dev/sde",
+            "create-fs": True,
+            "mount-point": "/var/lib/docker"
+        }
+        if attach_ebs_volumes([volume_json]):
+            break
 
 if __name__ == '__main__':
    main()
