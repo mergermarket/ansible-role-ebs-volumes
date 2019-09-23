@@ -278,7 +278,7 @@ def panic(title, text):
 
 def attach_ebs_volumes(volumes):
     if len(volumes) > 1:
-        LOGGER.info(
+        LOGGER.warn(
             "You are no longer able to attach multiple volumes"
         )
     volume = volumes[0]
