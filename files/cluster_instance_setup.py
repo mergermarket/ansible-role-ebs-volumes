@@ -277,37 +277,41 @@ def panic(title, text):
 
 
 def attach_ebs_volumes(volumes):
-    for volume in volumes:
-        try:
-            metadata = fetch_instance_metadata()
-            boto_ec2_client = boto3.session.Session(
-                region_name=metadata.get("region")
-            ).client("ec2")
-            volume_id, mount_point, device, local_device, detach, create_fs =\
-                volume_values(volume)
-            if check_volume_attachment(
-                boto_ec2_client, volume_id, device, local_device, detach
+    if len(volumes) > 1:
+        LOGGER.warn(
+            "You are no longer able to attach multiple volumes"
+        )
+    volume = volumes[0]
+    try:
+        metadata = fetch_instance_metadata()
+        boto_ec2_client = boto3.session.Session(
+            region_name=metadata.get("region")
+        ).client("ec2")
+        volume_id, mount_point, device, local_device, detach, create_fs =\
+            volume_values(volume)
+        if check_volume_attachment(
+            boto_ec2_client, volume_id, device, local_device, detach
+        ):
+            if attach_volume(
+                boto_ec2_client, 
+                metadata.get('instanceId'), 
+                volume_id, 
+                local_device
             ):
-                if attach_volume(
-                    boto_ec2_client, 
-                    metadata.get('instanceId'), 
-                    volume_id, 
-                    local_device
-                ):
-                    check_filesystem(local_device, create_fs)
-                    check_filesystem_mount(volume_id, local_device, mount_point)
-                    check_fstab(local_device, mount_point)
-                    LOGGER.info(
-                        "Volume {} successfully attached at {} mounted at {}.".format(
-                            volume_id, local_device, mount_point
-                        )
+                check_filesystem(local_device, create_fs)
+                check_filesystem_mount(volume_id, local_device, mount_point)
+                check_fstab(local_device, mount_point)
+                LOGGER.info(
+                    "Volume {} successfully attached at {} mounted at {}.".format(
+                        volume_id, local_device, mount_point
                     )
-                    return True
-        except Exception as err:
-            panic(
-                "error mounting ebs volume",
-                "volume id: %s, error: %s" % (volume_id, str(err)),
-            )
+                )
+                return True
+    except Exception as err:
+        panic(
+            "error mounting ebs volume",
+            "volume id: %s, error: %s" % (volume_id, str(err)),
+        )
     return False
 
 
