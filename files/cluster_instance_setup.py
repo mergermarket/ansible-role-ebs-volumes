@@ -288,7 +288,7 @@ def attach_ebs_volumes(volumes):
             region_name=metadata.get("region")
         ).client("ec2")
         volume_id, mount_point, device, local_device, detach, create_fs =\
-            volume_values(volume)cd 
+            volume_values(volume)
         if check_volume_attachment(
             boto_ec2_client, volume_id, device, local_device, detach
         ):
