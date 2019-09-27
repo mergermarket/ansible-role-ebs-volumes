@@ -277,10 +277,14 @@ def panic(title, text):
 
 
 def attach_ebs_volumes(volumes):
+    if len(volumes) == 0:
+        return False
+
     if len(volumes) > 1:
         LOGGER.warn(
             "You are no longer able to attach multiple volumes"
         )
+
     volume = volumes[0]
     try:
         metadata = fetch_instance_metadata()
