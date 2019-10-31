@@ -12,7 +12,11 @@ from cluster_instance_setup import attach_ebs_volumes
 def get_availability_zone():
     return urlopen('http://169.254.169.254/latest/meta-data/placement/availability-zone').read()
 
- 
+
+def get_instance_id():
+    return urlopen('http://169.254.169.254/latest/meta-data/instance-id').read()
+
+
 def get_region():
     availability_zone = get_availability_zone()
     return availability_zone[:-1]
@@ -28,6 +32,10 @@ def get_available_volumes(tag):
 
 def main():
     volumes = get_available_volumes({'Usage':'jenkins-volume'})
+    if not volumes:
+        ec2 = boto3.resource('ec2', region_name=get_region())
+        instance = ec2.Instance(get_instance_id())
+        instance.terminate()
     shuffle(volumes)
     for volume in volumes:
         volume_json = {
