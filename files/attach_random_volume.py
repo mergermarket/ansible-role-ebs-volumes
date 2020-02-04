@@ -1,37 +1,36 @@
 #!/usr/bin/python
-import random
-import time
-from urllib2 import urlopen
-from random import shuffle
 
 import boto3
 
-from cluster_instance_setup import attach_ebs_volumes
-
-
-def get_availability_zone():
-    return urlopen('http://169.254.169.254/latest/meta-data/placement/availability-zone').read()
-
-
-def get_instance_id():
-    return urlopen('http://169.254.169.254/latest/meta-data/instance-id').read()
-
-
-def get_region():
-    availability_zone = get_availability_zone()
-    return availability_zone[:-1]
+from cluster_instance_setup import (
+    attach_ebs_volumes, get_availability_zone, get_instance_id, get_region)
+from random import shuffle
 
 
 def get_available_volumes(tag):
     client = boto3.client('ec2', region_name=get_region())
-    ids=[]
-    for volume in client.describe_volumes(Filters=[{'Name':'tag:Usage', 'Values':['jenkins-volume']},{'Name':'status', 'Values':['available']},{'Name':'availability-zone', 'Values':[get_availability_zone()]}])['Volumes']:
-       ids.append(volume['VolumeId'])
+    ids = []
+    filters = [
+        {
+            'Name': 'tag:Usage',
+            'Values': ['jenkins-volume']
+        },
+        {
+            'Name': 'status',
+            'Values': ['available']
+        },
+        {
+            'Name': 'availability-zone',
+            'Values': [get_availability_zone()]
+        }
+    ]
+    for volume in client.describe_volumes(Filters=filters)['Volumes']:
+        ids.append(volume['VolumeId'])
     return ids
 
 
 def main():
-    volumes = get_available_volumes({'Usage':'jenkins-volume'})
+    volumes = get_available_volumes({'Usage': 'jenkins-volume'})
     if not volumes:
         ec2 = boto3.resource('ec2', region_name=get_region())
         instance = ec2.Instance(get_instance_id())
@@ -48,5 +47,6 @@ def main():
         if attach_ebs_volumes([volume_json]):
             break
 
+
 if __name__ == '__main__':
-   main()
+    main()
