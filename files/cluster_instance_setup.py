@@ -20,16 +20,19 @@ from __future__ import print_function
 # pylint: disable=C0111
 # pylint: disable=W0703
 
-import json
-import sys
-import re
-import logging
-from time import sleep
-from os import path, environ
-from subprocess import check_call, check_output
 import boto3
+import json
+import logging
+import re
+import sys
+
 from docopt import docopt
+from os import path, environ
 from random import random
+from subprocess import check_call, check_output
+from time import sleep
+from urllib2 import urlopen
+
 
 datadog_key = environ.get('DATADOG_API_KEY', None)
 
@@ -42,6 +45,7 @@ def setup_logger():
     logger.setLevel(level=logging.INFO)
     return logger
 
+
 LOGGER = setup_logger()
 
 
@@ -51,6 +55,22 @@ def fetch_instance_metadata():
         "-s",
         "http://169.254.169.254/latest/dynamic/instance-identity/document/"
     ]))
+
+
+def get_availability_zone():
+    url = \
+        'http://169.254.169.254/latest/meta-data/placement/availability-zone'
+    return urlopen(url).read()
+
+
+def get_instance_id():
+    url = 'http://169.254.169.254/latest/meta-data/instance-id'
+    return urlopen(url).read()
+
+
+def get_region():
+    availability_zone = get_availability_zone()
+    return availability_zone[:-1]
 
 
 def main(arguments):
@@ -98,6 +118,7 @@ def check_volume_attachment(
 
     return True
 
+
 def detach_volume(boto_ec2_client, volume_id):
     max_wait = 5
     next_wait = 1
@@ -137,9 +158,10 @@ def attach_volume(boto_ec2_client, instance_id, volume_id, device):
                     Device=device,
                 )
             except Exception as err:
-                LOGGER.error("Error attaching volume (%s) - %s", volume_id, err)
+                LOGGER.error(
+                    "Error attaching volume (%s) - %s", volume_id, err)
                 return False
-                
+
         wait_for_device_to_exist(device)
         if device_exist(device):
             return True
@@ -273,6 +295,10 @@ def panic(title, text):
                 ],
             })
         ])
+
+    ec2 = boto3.resource('ec2', region_name=get_region())
+    ec2.Instance(metadata["instanceId"]).terminate()
+
     sys.exit(1)
 
 
@@ -297,16 +323,17 @@ def attach_ebs_volumes(volumes):
             boto_ec2_client, volume_id, device, local_device, detach
         ):
             if attach_volume(
-                boto_ec2_client, 
-                metadata.get('instanceId'), 
-                volume_id, 
+                boto_ec2_client,
+                metadata.get('instanceId'),
+                volume_id,
                 local_device
             ):
                 check_filesystem(local_device, create_fs)
                 check_filesystem_mount(volume_id, local_device, mount_point)
                 check_fstab(local_device, mount_point)
                 LOGGER.info(
-                    "Volume {} successfully attached at {} mounted at {}.".format(
+                    "Volume {} successfully attached at {} mounted at {}.".
+                    format(
                         volume_id, local_device, mount_point
                     )
                 )
