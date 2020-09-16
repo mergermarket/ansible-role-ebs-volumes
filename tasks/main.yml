@@ -20,3 +20,9 @@
     src: attach_random_volume.py
     dest: /usr/local/bin/
     mode: 0755
+
+- name: attach random volume by usage
+  copy:
+    src: attach_random_volume_by_usage.py
+    dest: /usr/local/bin/
+    mode: 0755
