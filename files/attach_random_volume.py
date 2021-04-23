@@ -9,10 +9,9 @@ from cluster_instance_setup import (
 from random import shuffle
 
 
-def get_available_volumes(tag_value, tag_name='tag:Usage'):
+def get_available_volumes(tag_value, tag_key):
     client = boto3.client('ec2', region_name=get_region())
     ids = []
-
     filters = [
         {
             'Name': 'status',
@@ -23,11 +22,10 @@ def get_available_volumes(tag_value, tag_name='tag:Usage'):
             'Values': [get_availability_zone()]
         },
         {
-            'Name': tag_name,
+            'Name': tag_key,
             'Values': [tag_value]
-        }        
+        }
     ]
-
     for volume in client.describe_volumes(Filters=filters)['Volumes']:
         ids.append(volume['VolumeId'])
     return ids
@@ -35,10 +33,13 @@ def get_available_volumes(tag_value, tag_name='tag:Usage'):
 
 def main():
     usage = "jenkins-volume"
+    tag_key = 'tag:Usage'
     if len(sys.argv) > 1:
         usage = sys.argv[1]
+        if re.match('jenkins-swarm2', usage):
+            tag_key='tag:Name'
 
-    volumes = get_available_volumes(usage, tag_name='tag:Name')
+    volumes = get_available_volumes(usage, tag_key)
     if not volumes:
         ec2 = boto3.resource('ec2', region_name=get_region())
         instance = ec2.Instance(get_instance_id())
