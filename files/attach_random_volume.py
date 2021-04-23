@@ -2,20 +2,18 @@
 
 import boto3
 import sys
+import re
 
 from cluster_instance_setup import (
     attach_ebs_volumes, get_availability_zone, get_instance_id, get_region)
 from random import shuffle
 
 
-def get_available_volumes(tag):
+def get_available_volumes(tag_value, tag_name='tag:Usage'):
     client = boto3.client('ec2', region_name=get_region())
     ids = []
+
     filters = [
-        {
-            'Name': 'tag:Usage',
-            'Values': [tag['Usage']]
-        },
         {
             'Name': 'status',
             'Values': ['available']
@@ -23,8 +21,13 @@ def get_available_volumes(tag):
         {
             'Name': 'availability-zone',
             'Values': [get_availability_zone()]
-        }
+        },
+        {
+            'Name': tag_name,
+            'Values': [tag_value]
+        }        
     ]
+
     for volume in client.describe_volumes(Filters=filters)['Volumes']:
         ids.append(volume['VolumeId'])
     return ids
@@ -35,7 +38,7 @@ def main():
     if len(sys.argv) > 1:
         usage = sys.argv[1]
 
-    volumes = get_available_volumes({'Usage': usage})
+    volumes = get_available_volumes(usage, tag_name='tag:Name')
     if not volumes:
         ec2 = boto3.resource('ec2', region_name=get_region())
         instance = ec2.Instance(get_instance_id())
