@@ -1,7 +1,7 @@
 EBS Volumes
 =========
 
-[![Build Status](https://travis-ci.org/mergermarket/ansible-role-ebs-volumes.svg?branch=master)](https://travis-ci.org/mergermarket/ansible-role-ebs-volumes)
+[![Deploy to Ansible Galaxy](https://github.com/mergermarket/ansible-role-ebs-volumes/actions/workflows/main.yml/badge.svg)](https://github.com/mergermarket/ansible-role-ebs-volumes/actions/workflows/main.yml)
 
 Manage EBS volumes
 
