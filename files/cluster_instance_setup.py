@@ -30,7 +30,7 @@ from docopt import docopt
 from os import path, environ
 from random import random
 from subprocess import check_call, check_output
-from time import sleep
+from time import sleep, time
 from urllib2 import urlopen
 
 
@@ -172,10 +172,14 @@ def attach_volume(boto_ec2_client, instance_id, volume_id, device):
 
 
 def wait_for_device_to_exist(device):
+    timeout=300
     while True:
         LOGGER.info("Checking for existence of %s...", device)
         if path.exists(device):
             return
+        if timeout == 0:
+            return
+        timeout -= 1
         sleep(1)
 
 
