@@ -52,14 +52,9 @@ LOGGER = setup_logger()
 
 def fetch_instance_metadata():
     token = get_token()
-    return json.loads(check_output([
-        "curl",
-        "-H",
-        f"'X-aws-ec2-metadata-token: {token}'",
-        "-s",
-        "http://169.254.169.254/latest/dynamic/instance-identity/document/"
-    ]))
-
+    url = "http://169.254.169.254/latest/dynamic/instance-identity/document/"
+    headers = {'X-aws-ec2-metadata-token' : token}
+    return requests.get(url=url, headers=headers).json()
 
 def get_availability_zone():
     url = \
