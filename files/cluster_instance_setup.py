@@ -241,7 +241,7 @@ def check_filesystem_mount(volume_id, device, mount_point):
 def get_mounts():
     return {key: val for key, val in [
         re.match(r"^(.*?) on (\S+)", line).groups()
-        for line in str.splitlines(check_output(["mount"]))
+        for line in str.splitlines(check_output(["mount"]).decode())
     ]}
 
 
