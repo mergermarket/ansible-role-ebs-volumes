@@ -31,7 +31,8 @@ from os import path, environ
 from random import random
 from subprocess import check_call, check_output
 from time import sleep, time
-from urllib2 import urlopen
+from requests import Request
+import requests
 
 
 datadog_key = environ.get('DATADOG_API_KEY', None)
@@ -50,8 +51,11 @@ LOGGER = setup_logger()
 
 
 def fetch_instance_metadata():
+    token = get_token()
     return json.loads(check_output([
         "curl",
+        "-H",
+        f"'X-aws-ec2-metadata-token: {token}'",
         "-s",
         "http://169.254.169.254/latest/dynamic/instance-identity/document/"
     ]))
@@ -60,12 +64,22 @@ def fetch_instance_metadata():
 def get_availability_zone():
     url = \
         'http://169.254.169.254/latest/meta-data/placement/availability-zone'
-    return urlopen(url).read()
+    token = get_token()
+    headers = {'X-aws-ec2-metadata-token' : token}
+    return requests.get(url=url, headers=headers).text
 
 
 def get_instance_id():
     url = 'http://169.254.169.254/latest/meta-data/instance-id'
-    return urlopen(url).read()
+    token = get_token()
+    headers = {'X-aws-ec2-metadata-token' : token}
+    return requests.get(url=url, headers=headers).text
+
+def get_token():
+    url = 'http://169.254.169.254/latest/api/token'
+    headers = {'X-aws-ec2-metadata-token-ttl-seconds': "21600"}
+    return requests.put(url=url,  headers=headers).content
+
 
 
 def get_region():
