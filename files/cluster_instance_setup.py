@@ -310,7 +310,7 @@ def panic(title, text):
         ])
 
     ec2 = boto3.resource('ec2', region_name=get_region())
-    # ec2.Instance(metadata["instanceId"]).terminate()
+    ec2.Instance(metadata["instanceId"]).terminate()
 
     sys.exit(1)
 
