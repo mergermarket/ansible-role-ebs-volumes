@@ -177,7 +177,7 @@ def attach_volume(boto_ec2_client, instance_id, volume_id, device):
 
         next_wait = (0.875 + (random() / 4)) * min(max_wait, 2 * next_wait)
         sleep(next_wait)
-        return False
+    return False
 
 
 def wait_for_device_to_exist(device):
