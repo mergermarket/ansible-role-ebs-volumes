@@ -8,7 +8,7 @@ Manage EBS volumes
 Requirements
 ------------
 
-yum
+dnf
 
 Role Variables
 --------------
