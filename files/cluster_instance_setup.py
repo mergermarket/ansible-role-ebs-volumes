@@ -3,7 +3,7 @@
 """Setup cluster instance.
 
 Usage:
-  cluster-instance-setup [--ebs-volumes=<ebs-volumes>] [--efs-filesystem=<efs-filesystem>]
+  cluster-instance-setup [--ebs-volumes=<ebs-volumes>] [--efs-filesystem=<efs-filesystem>] [--efs-filesystem-mnt=<efs-filesystem-mnt>]
   cluster-instance-setup (-h | --help)
   cluster-instance-setup --version
 
@@ -12,6 +12,7 @@ Options:
   --version     Show version.
   --ebs-volumes=<ebs-volumes>  JSON array of ebs volumes to attach.
   --efs-filesystem=<efs-filesystem> ID of EFS filesystem to mount.
+  --efs-filesystem-mnt=<efs-filesystem-mnt> Where to mount the EFS disk
 
 """ # noqa
 
@@ -89,7 +90,7 @@ def main(arguments):
         LOGGER.info("Done attaching ebs volumes.")
     if arguments.get("--efs-filesystem") is not None:
         LOGGER.info("Configuring EFS...")
-        configure_efs(arguments.get("--efs-filesystem"))
+        configure_efs(arguments.get("--efs-filesystem"), arguments.get("--efs-filesystem-mnt", "/mnt/efs"))
         LOGGER.info("Done configuring EFS.")
 
 
@@ -359,9 +360,8 @@ def attach_ebs_volumes(volumes):
     return False
 
 
-def configure_efs(filesystem_id):
+def configure_efs(filesystem_id, mount_point):
     metadata = fetch_instance_metadata()
-    mount_point = "/mnt/efs"
     check_call(["mkdir", "-p", mount_point])
     with open("/etc/fstab", "a") as handle:
         handle.write(
