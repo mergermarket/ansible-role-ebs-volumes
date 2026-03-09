@@ -51,7 +51,7 @@ def main():
             "volume-id": volume,
             "device": "/dev/sde",
             "create-fs": True,
-            "mount-point": "/var/lib/docker"
+            "mount-point": "/var/lib/docker2"
         }
         if attach_ebs_volumes([volume_json]):
             break
